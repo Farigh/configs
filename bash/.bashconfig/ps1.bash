@@ -37,9 +37,9 @@ fi
 if [ "$USER" = "root" ]; then
     PS1="\n${LGHT_RED}\A${RESET_COLOR} [ ${LGHT_RED}\u${RESET_COLOR}@${YELLOW}"
     PS1="${PS1}${displayed_host}${RESET_COLOR} | ${PURPLE} ret = \$? "
-    PS1="${PS1}${RESET_COLOR} > ${LGHT_BLUE}\w${RESET_COLOR}\n# "
+    PS1="${PS1}${RESET_COLOR} > ${LGHT_BLUE}\w${RESET_COLOR}"'`custom_git_ps1`'"\n# "
 else
     PS1="\n${LGHT_RED}\A${RESET_COLOR} [ ${GREEN}\u${RESET_COLOR}@${YELLOW}"
     PS1="${PS1}${displayed_host}${RESET_COLOR} | ${PURPLE} ret = \$? "
-    PS1="${PS1}${RESET_COLOR} > ${LGHT_BLUE}\w${RESET_COLOR}\n$ "
+    PS1="${PS1}${RESET_COLOR} > ${LGHT_BLUE}\w${RESET_COLOR}"'`custom_git_ps1`'"\n$ "
 fi
