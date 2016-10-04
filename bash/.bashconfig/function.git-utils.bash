@@ -8,22 +8,6 @@ LIGHT_BLUE=`echo -e "\e[1;34m"`
 PURPLE=`echo -e "\e[0;35m"`
 LIGHT_CYAN=`echo -e "\e[1;36m"`
 
-function git_cleanup_merged_branches()
-{
-    local git_main_branch
-    local git_sed_color_deleted="s/Deleted branch \([^ ]*\) (was \([a-fA-F0-9]*\))/Successfully deleted branch ${LIGHT_GREEN}\1${RESET_COLOR} (was ${LIGHT_CYAN}\2${RESET_COLOR})/"
-    local git_sed_color_unmerged="s/error: The branch '\([^']*\)' is not fully merged./Can't delete branch ${LIGHT_RED}\1${RESET_COLOR} (not fully merged)/"
-
-	# List whatever origin branch available for a merged status in this loop
-    # You can use $(git branch -r | grep/awk/sed "<regex>")
-    for git_main_branch in origin/master; do
-        # Remove all branch merged in each main branches
-        git branch --merged $git_main_branch | grep -v '^\*' \
-                                             | xargs --no-run-if-empty -n 1 git branch -d 2>&1 \
-                                             | sed "${git_sed_color_deleted};${git_sed_color_unmerged}"
-    done
-}
-
 function warn_if_old_fetch()
 {
     local warn_date_min_days=2

@@ -17,6 +17,30 @@
     stashunstaged = stash save --keep-index --include-untracked
     st = status
     clean-tags = !git tag -l | xargs git tag -d && git fetch -t
+
+    # List whatever origin branch you consider for integration in the for loop
+    # (ie. the branch was merged to). You can use $(git branch -r | grep/awk/sed "<regex>")
+    # Color disabled if piped
+    clean-branches = "!function git_cleanup_merged_branches() \
+                      { \
+                          if [ -t 1 ]; then \
+                              local git_cleanup_reset_color=`echo -e \"\\e[00m\"`; \
+                              local git_cleanup_light_red=`echo -e \"\\e[1;31m\"`; \
+                              local git_cleanup_light_green=`echo -e \"\\e[1;32m\"`; \
+                              local git_cleanup_light_cyan=`echo -e \"\\e[1;36m\"`; \
+                          fi; \
+ \
+                          local git_main_branch; \
+                          local git_sed_color_deleted=\"s/Deleted branch \\([^ ]*\\) (was \\([a-fA-F0-9]*\\))/Successfully deleted branch ${git_cleanup_light_green}\\1${git_cleanup_reset_color} (was ${git_cleanup_light_cyan}\\2${git_cleanup_reset_color})/\"; \
+                          local git_sed_color_unmerged=\"s/error: The branch '\\([^']*\\)' is not fully merged./Can't delete branch ${git_cleanup_light_red}\\1${git_cleanup_reset_color} (not fully merged)/\"; \
+ \
+                          for git_main_branch in origin/master; do \
+                              git branch --merged $git_main_branch | grep -v '^\\*' \
+                                                                   | xargs --no-run-if-empty -n 1 git branch -d 2>&1 \
+                                                                   | sed \"${git_sed_color_deleted};${git_sed_color_unmerged}\"; \
+                          done; \
+                      }; git_cleanup_merged_branches"
+
     alias = config --get-regexp ^alias\\.
     upstream-candidates = !git log $(git rev-parse --abbrev-ref --symbolic-full-name @{upstream} 2>/dev/null)..HEAD  --pretty='format:%Cred%h%Creset %s' --color
 
