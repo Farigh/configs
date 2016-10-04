@@ -1,23 +1,23 @@
 #! /bin/bash
 
 # Common colors
-RESET_COLOR='\033[00m'
-BLACK='\033[0;30m'
-DARK_GRAY='\033[1;30m'
-RED='\033[0;31m'
-LGHT_RED='\033[1;31m'
-GREEN='\033[0;32m'
-LGHT_GREEN='\033[1;32m'
-BROWN='\033[0;33m'
-YELLOW='\033[1;33m'
-BLUE='\033[0;34m'
-LGHT_BLUE='\033[1;34m'
-PURPLE='\033[0;35m'
-LGHT_PURPLE='\033[1;35m'
-CYAN='\033[0;36m'
-LGHT_CYAN='\033[1;36m'
-LGHT_GRAY='\033[0;37m'
-WHITE='\033[1;37m'
+RESET_COLOR=`echo -e "\e[00m"`
+BLACK=`echo -e "\e[0;30m"`
+DARK_GRAY=`echo -e "\e[1;30m"`
+RED=`echo -e "\e[0;31m"`
+LGHT_RED=`echo -e "\e[1;31m"`
+GREEN=`echo -e "\e[0;32m"`
+LGHT_GREEN=`echo -e "\e[1;32m"`
+BROWN=`echo -e "\e[0;33m"`
+YELLOW=`echo -e "\e[1;33m"`
+BLUE=`echo -e "\e[0;34m"`
+LGHT_BLUE=`echo -e "\e[1;34m"`
+PURPLE=`echo -e "\e[0;35m"`
+LGHT_PURPLE=`echo -e "\e[1;35m"`
+CYAN=`echo -e "\e[0;36m"`
+LGHT_CYAN=`echo -e "\e[1;36m"`
+LGHT_GRAY=`echo -e "\e[0;37m"`
+WHITE=`echo -e "\e[1;37m"`
 
 # Detect chroot
 if [ "x${debian_chroot}" != "x" ]; then
