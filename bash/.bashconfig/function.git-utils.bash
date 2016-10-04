@@ -8,21 +8,26 @@ LIGHT_BLUE=`echo -e "\e[1;34m"`
 PURPLE=`echo -e "\e[0;35m"`
 LIGHT_CYAN=`echo -e "\e[1;36m"`
 
-function git_cleanup_merged_branches
+function git_cleanup_merged_branches()
 {
     local git_main_branch
-	# List whatever origin branch possible for a merged status in this loop
-	# You can use $(git branch -r | grep/awk/sed "<regex>")
+    local git_sed_color_deleted="s/Deleted branch \([^ ]*\) (was \([a-fA-F0-9]*\))/Successfully deleted branch ${LIGHT_GREEN}\1${RESET_COLOR} (was ${LIGHT_CYAN}\2${RESET_COLOR})/"
+    local git_sed_color_unmerged="s/error: The branch '\([^']*\)' is not fully merged./Can't delete branch ${LIGHT_RED}\1${RESET_COLOR} (not fully merged)/"
+
+	# List whatever origin branch available for a merged status in this loop
+    # You can use $(git branch -r | grep/awk/sed "<regex>")
     for git_main_branch in origin/master; do
         # Remove all branch merged in each main branches
-        git branch --merged $git_main_branch | grep -v '^\*' | xargs --no-run-if-empty -n 1 git branch -d
+        git branch --merged $git_main_branch | grep -v '^\*' \
+                                             | xargs --no-run-if-empty -n 1 git branch -d 2>&1 \
+                                             | sed "${git_sed_color_deleted};${git_sed_color_unmerged}"
     done
 }
 
-function warn_if_old_fetch
+function warn_if_old_fetch()
 {
     local warn_date_min_days=2
-    # Get git root dir and format it to usix path (c:/ => /c/)
+    # Get git root dir and format it to unix path (c:/ => /c/)
     local git_root_dir=$(git rev-parse --git-dir 2>/dev/null | sed "s#^\([A-Za-z]\):#/\1#")
 
     local git_fetch_file="${git_root_dir}/FETCH_HEAD"
@@ -39,32 +44,17 @@ function warn_if_old_fetch
     fi
 }
 
-function get_tracking_branch
-{
-    local git_local_branch=$1
-    local sed_skip_prefix_char="[^ ]* *"
-    local sed_skip_branch_name="[^ ]* *"
-    local sed_skip_commit_sha1="[0-9a-fA-F]* *"
-    local sed_extract_tracking_branch="\[\([^:]*\)\(: .*\)*\]"
-
-    git branch -vv | grep " ${git_local_branch} " \
-                   | sed -n "s#${sed_skip_prefix_char}${sed_skip_branch_name}${sed_skip_commit_sha1}${sed_extract_tracking_branch}.*#\1#p"
-}
-
-function get_origin_branch_or_commit
+function deduce_origin_branch_or_commit()
 {
     local git_local_branch=$1
 
-    # If we're not in detached HEAD, try to simply use git branch to extract data
-    if [ "${git_local_branch}" != "HEAD" ]; then
-        local origin_tracking_branch_result=$(get_tracking_branch $git_local_branch)
-        if [ "$origin_tracking_branch_result" != "" ]; then
-            echo "$origin_tracking_branch_result"
-            return
-        fi
+    # Count commit only available on this branch (starts with ! using git show-branch -g)
+    local exclusif_commit_count=$(git show-branch -g --sha1-name $git_local_branch | grep '!' | tail -n1 | sed "s/.*@{\([0-9]*\)}].*/\1/")
+
+    local origin_commit="HEAD"
+    if [ "$exclusif_commit_count" != "" ]; then
+        origin_commit=$(git rev-parse HEAD~${exclusif_commit_count})
     fi
-
-    local origin_commit=$(git show-branch --merge-base ${git_local_branch})
 
     # If we find nothing, return fork-point sha1
     local forkpoint_result="${origin_commit}"
@@ -73,7 +63,7 @@ function get_origin_branch_or_commit
     local branch_count=0
     for branch_name in $(git branch -r --contains ${origin_commit} | grep -v HEAD); do
         ((branch_count++))
-        # Look for release branch 1st
+        # Look for release branch 1st (You can modify, add patterns here)
         if [ "$branch_name" == "origin/release/"* ]; then
             forkpoint_result="$branch_name"
             break
@@ -108,30 +98,26 @@ function get_origin_branch_or_commit
     echo "${forkpoint_result}"
 }
 
-function custom_git_ps1
+function get_repository_info()
 {
-    git rev-parse --git-dir &> /dev/null
-    if [ $? -ne 0 ]; then
-        # Not a git repo
-        return
+    # Try to simply use git branch to extract upstream branch
+    local origin_branch=$(git rev-parse --abbrev-ref --symbolic-full-name @{upstream} 2>/dev/null)
+    local is_upstream_branch=1
+    if [ "$origin_branch" == "" ]; then
+        # No upstream branch found, try to deduce origin branch (if multiple, get fork-point commit)
+        origin_branch=$(deduce_origin_branch_or_commit ${git_local_branch})
+        is_upstream_branch=0
     fi
 
-    local git_local_branch=$(git rev-parse --abbrev-ref HEAD)
+    local upstream_branch_prefix=""
+    if [ $is_upstream_branch -eq 0 ]; then
+        upstream_branch_prefix="${LIGHT_RED}no-up:${RESET_COLOR}"
+    fi
 
-    # Detect origin branch (if multiple, get fork-point commit)
-    local origin_branch=$(get_origin_branch_or_commit ${git_local_branch})
     local commit_diff_count=$(git rev-list --left-right --count ${origin_branch}...HEAD)
     local behind_commit_count=$(echo -e "$commit_diff_count" | cut -f 1)
     local ahead_commit_count=$(echo -e "$commit_diff_count" | cut -f 2)
 
-    if [ "$git_local_branch" == "HEAD" ]; then
-        local rev_short_number=`git rev-parse --short HEAD`
-        git_local_branch="${LIGHT_RED}HEAD detached at ${RESET_COLOR}${rev_short_number}"
-    else
-        git_local_branch="${LIGHT_CYAN}${git_local_branch}${RESET_COLOR}"
-    fi
-
-    local commit_diff_str=""
     if [ "$ahead_commit_count" != "0" ]; then
         commit_diff_str="${LIGHT_GREEN}+${ahead_commit_count}${RESET_COLOR}"
     fi
@@ -147,11 +133,9 @@ function custom_git_ps1
         commit_diff_str=":${commit_diff_str}"
     fi
 
-    commit_diff_str=" [${LIGHT_YELLOW}${origin_branch}${RESET_COLOR}${commit_diff_str}]"
+    commit_diff_str=" [${upstream_branch_prefix}${LIGHT_YELLOW}${origin_branch}${RESET_COLOR}${commit_diff_str}]"
 
     local operation_status=$(git diff-index HEAD | cut -d ' ' -f 5)
-
-    local operation_indicator=""
 
     local modified=$(echo -e "$operation_status" | grep '^[^DA]')
     if [ "$modified" != "" ]; then
@@ -169,6 +153,41 @@ function custom_git_ps1
     if [ "$added" != "" ]; then
         # Added operations
        operation_indicator="${operation_indicator}${LIGHT_GREEN}+${RESET_COLOR}"
+    fi
+}
+
+function custom_git_ps1()
+{
+    git rev-parse --git-dir &> /dev/null
+    if [ $? -ne 0 ]; then
+        # Not a git repo
+        return
+    fi
+
+    git rev-parse --abbrev-ref HEAD &> /dev/null
+    if [ $? -ne 0 ]; then
+        # Empty git repo
+        echo " (${LIGHT_YELLOW}Initial commit${RESET_COLOR})"
+       return
+    fi
+
+    local git_local_branch=$(git rev-parse --abbrev-ref HEAD)
+
+    local commit_diff_str=""
+    local operation_indicator=""
+
+    local git_is_bare_repository=$(git rev-parse --is-bare-repository)
+    if [ "$git_is_bare_repository" == "true" ]; then
+        operation_indicator=" [${LIGHT_RED}bare repository${RESET_COLOR}]"
+    else
+        get_repository_info
+    fi
+
+    if [ "$git_local_branch" == "HEAD" ]; then
+        local rev_short_number=`git rev-parse --short HEAD`
+        git_local_branch="${LIGHT_RED}HEAD detached at ${RESET_COLOR}${rev_short_number}"
+    else
+        git_local_branch="${LIGHT_CYAN}${git_local_branch}${RESET_COLOR}"
     fi
 
     local warn_if_old_fetch_status=$(warn_if_old_fetch)
