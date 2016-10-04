@@ -18,6 +18,7 @@
     st = status
     clean-tags = !git tag -l | xargs git tag -d && git fetch -t
     alias = config --get-regexp ^alias\\.
+    upstream-candidates = !git log $(git rev-parse --abbrev-ref --symbolic-full-name @{upstream} 2>/dev/null)..HEAD  --pretty='format:%Cred%h%Creset %s' --color
 
 [core]
     # Out of luck: on Windows w/o msysGit? You may have Notepad++...
