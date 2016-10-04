@@ -10,8 +10,8 @@
 #    email = <Email>
 
 [alias]
-    pull = pull --rebase
     lg = log --graph --date=relative --pretty=tformat:'%Cred%h%Creset -%C(auto)%d%Creset %s %Cgreen(%an %ad)%Creset'
+    my-work = !git log --all --committer="`git config user.email`" --date=local --pretty=tformat:'%Cred%h%Creset - %Cgreen(%ad)%Creset %s'
     wdiff = diff --word-diff
     stashall = stash save --include-untracked
     stashunstaged = stash save --keep-index --include-untracked
@@ -38,13 +38,10 @@
 [diff]
     # Use better, descriptive initials (c, i, w) instead of a/b.
     mnemonicPrefix = true
-	
     # Show renames/moves as such
     renames = true
-	
     # When using --word-diff, assume --word-diff-regex=.
     wordRegex = .
-	
     # Display submodule-related information (commit listings)
     submodule = log
 
@@ -55,7 +52,6 @@
 [log]
     # Use abbrev SHAs whenever possible/relevant instead of full 40 chars
     abbrevCommit = true
-	
     # Automatically --follow when given a single path
     follow = true
 
@@ -66,20 +62,24 @@
 [mergetool]
     # Clean up backup files created by merge tools on tool exit
     keepBackup = false
-	
+
     # Clean up temp files created by merge tools on tool exit
     keepTemporaries = false
-	
+
     # Put the temp files in a dedicated dir anyway
     writeToTemp = true
-	
+
     # Auto-accept file prompts when launching merge tools
     prompt = false
+
+[pull]
+    # Prefer rebase over merge strategy
+    rebase = true
 
 [status]
     # Display submodule rev change summaries in status
     submoduleSummary = true
-	
+
     # Recursively traverse untracked directories to display all contents
     showUntrackedFiles = all
 
