@@ -33,10 +33,11 @@ function deduce_origin_branch_or_commit()
     local git_local_branch=$1
 
     # Count commit only available on this branch (starts with ! using git show-branch -g)
-    local exclusif_commit_count=$(git show-branch -g --sha1-name $git_local_branch | grep '!' | tail -n1 | sed "s/.*@{\([0-9]*\)}].*/\1/")
+    local exclusif_commit_count=$(git show-branch -g --sha1-name $git_local_branch | grep '!' | tail -n1 | sed -n "s/.*@{\([0-9]*\)}].*/\1/p")
 
+    # If commits were added since last push, deduce the origin commit
     local origin_commit="HEAD"
-    if [ "$exclusif_commit_count" != "" ]; then
+    if [ "${exclusif_commit_count}" != "" ]; then
         origin_commit=$(git rev-parse HEAD~${exclusif_commit_count})
     fi
 
@@ -59,8 +60,8 @@ function deduce_origin_branch_or_commit()
             continue
         fi
 
-        # Then look for current origin
-        if [ "$branch_name" == "origin/${git_local_branch}" ]; then
+        # Then look for current branch on origin
+        if [ "$branch_name" == "origin/${git_local_branch}" ] && [ "$forkpoint_result" != "origin/master" ]; then
             forkpoint_result="$branch_name"
         fi
     done
@@ -84,6 +85,8 @@ function deduce_origin_branch_or_commit()
 
 function get_repository_info()
 {
+    local git_local_branch=$1
+
     # Try to simply use git branch to extract upstream branch
     local origin_branch=$(git rev-parse --abbrev-ref --symbolic-full-name @{upstream} 2>/dev/null)
     local is_upstream_branch=1
@@ -164,7 +167,7 @@ function custom_git_ps1()
     if [ "$git_is_bare_repository" == "true" ]; then
         operation_indicator=" [${LIGHT_RED}bare repository${RESET_COLOR}]"
     else
-        get_repository_info
+        get_repository_info $git_local_branch
     fi
 
     if [ "$git_local_branch" == "HEAD" ]; then
