@@ -15,12 +15,14 @@
     wdiff = diff --word-diff
     stashall = stash save --include-untracked
     stashunstaged = stash save --keep-index --include-untracked
-    st = status
+    st = status --short --branch
     clean-tags = !git tag -l | xargs git tag -d && git fetch -t
 
-    # List whatever origin branch you consider for integration in the for loop
+    # Cleanup all remote branches
+    # Cleanup all merged branches (on master or release branch)
+    # Colors are disabled if piped
+    # Hint: List whatever origin branch you consider for integration in the for loop
     # (ie. the branch was merged to). You can use $(git branch -r | grep/awk/sed "<regex>")
-    # Color disabled if piped
     clean-branches = "!function git_cleanup_merged_branches() \
                       { \
                           if [ -t 1 ]; then \
@@ -29,6 +31,8 @@
                               local git_cleanup_light_green=`echo -e \"\\e[1;32m\"`; \
                               local git_cleanup_light_cyan=`echo -e \"\\e[1;36m\"`; \
                           fi; \
+ \
+                          git remote show | xargs --no-run-if-empty -n 1 git remote prune; \
  \
                           local git_main_branch; \
                           local git_sed_color_deleted=\"s/Deleted branch \\([^ ]*\\) (was \\([a-fA-F0-9]*\\))/Successfully deleted branch ${git_cleanup_light_green}\\1${git_cleanup_reset_color} (was ${git_cleanup_light_cyan}\\2${git_cleanup_reset_color})/\"; \
@@ -63,10 +67,13 @@
 [diff]
     # Use better, descriptive initials (c, i, w) instead of a/b.
     mnemonicPrefix = true
+
     # Show renames/moves as such
     renames = true
+
     # When using --word-diff, assume --word-diff-regex=.
     wordRegex = .
+
     # Display submodule-related information (commit listings)
     submodule = log
 
@@ -77,6 +84,7 @@
 [log]
     # Use abbrev SHAs whenever possible/relevant instead of full 40 chars
     abbrevCommit = true
+
     # Automatically --follow when given a single path
     follow = true
 
