@@ -23,22 +23,22 @@
     # Colors are disabled if piped
     # Hint: List whatever origin branch you consider for integration in the for loop
     # (ie. the branch was merged to). You can use $(git branch -r | grep/awk/sed "<regex>")
-    clean-branches = "!function git_cleanup_merged_branches() \
+    clean-branches = "!git_cleanup_merged_branches() \
                       { \
                           if [ -t 1 ]; then \
-                              local git_cleanup_reset_color=`echo -e \"\\e[00m\"`; \
-                              local git_cleanup_light_red=`echo -e \"\\e[1;31m\"`; \
-                              local git_cleanup_light_green=`echo -e \"\\e[1;32m\"`; \
-                              local git_cleanup_light_cyan=`echo -e \"\\e[1;36m\"`; \
+                              git_cleanup_reset_color=$(echo -e '\\e[00m'); \
+                              git_cleanup_light_red=$(echo -e '\\e[1;31m'); \
+                              git_cleanup_light_green=$(echo -e '\\e[1;32m'); \
+                              git_cleanup_light_cyan=$(echo -e '\\e[1;36m'); \
                           fi; \
  \
-                          local git_sed_color_pruned=\"s/\\[pruned\\]/\\[${git_cleanup_light_green}pruned${git_cleanup_reset_color}\\]/\"; \
+                          git_sed_color_pruned=\"s/\\[pruned\\]/\\[${git_cleanup_light_green}pruned${git_cleanup_reset_color}\\]/\"; \
  \
                           git remote show | xargs --no-run-if-empty -n 1 git remote prune | sed \"${git_sed_color_pruned}\"; \
  \
-                          local git_main_branch; \
-                          local git_sed_color_deleted=\"s/Deleted branch \\([^ ]*\\) (was \\([a-fA-F0-9]*\\))/Successfully deleted branch ${git_cleanup_light_green}\\1${git_cleanup_reset_color} (was ${git_cleanup_light_cyan}\\2${git_cleanup_reset_color})/\"; \
-                          local git_sed_color_unmerged=\"s/error: The branch '\\([^']*\\)' is not fully merged./Can't delete branch ${git_cleanup_light_red}\\1${git_cleanup_reset_color} (not fully merged)/\"; \
+                          git_main_branch=''; \
+                          git_sed_color_deleted=\"s/Deleted branch \\([^ ]*\\) (was \\([a-fA-F0-9]*\\))/Successfully deleted branch ${git_cleanup_light_green}\\1${git_cleanup_reset_color} (was ${git_cleanup_light_cyan}\\2${git_cleanup_reset_color})/\"; \
+                          git_sed_color_unmerged=\"s/error: The branch '\\([^']*\\)' is not fully merged./Can't delete branch ${git_cleanup_light_red}\\1${git_cleanup_reset_color} (not fully merged)/\"; \
  \
                           for git_main_branch in origin/master; do \
                               git branch --merged $git_main_branch | grep -v '^\\*' \
@@ -63,8 +63,9 @@
     # Don't handle chmod changes on Windows
     #filemode = false
 
-[commit]
-    template = ~/.gitmessage
+# Uncomment to use a git message template (~/.gitmessage file creation needed)
+#[commit]
+#    template = ~/.gitmessage
 
 [diff]
     # Use better, descriptive initials (c, i, w) instead of a/b.
