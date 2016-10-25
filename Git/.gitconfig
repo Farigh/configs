@@ -32,7 +32,9 @@
                               local git_cleanup_light_cyan=`echo -e \"\\e[1;36m\"`; \
                           fi; \
  \
-                          git remote show | xargs --no-run-if-empty -n 1 git remote prune; \
+                          local git_sed_color_pruned=\"s/\\[pruned\\]/\\[${git_cleanup_light_green}pruned${git_cleanup_reset_color}\\]/\"; \
+ \
+                          git remote show | xargs --no-run-if-empty -n 1 git remote prune | sed \"${git_sed_color_pruned}\"; \
  \
                           local git_main_branch; \
                           local git_sed_color_deleted=\"s/Deleted branch \\([^ ]*\\) (was \\([a-fA-F0-9]*\\))/Successfully deleted branch ${git_cleanup_light_green}\\1${git_cleanup_reset_color} (was ${git_cleanup_light_cyan}\\2${git_cleanup_reset_color})/\"; \
