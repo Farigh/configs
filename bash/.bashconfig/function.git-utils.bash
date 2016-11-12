@@ -90,7 +90,9 @@ function get_repository_info()
     # Try to simply use git branch to extract upstream branch
     local origin_branch=$(git rev-parse --abbrev-ref --symbolic-full-name @{upstream} 2>/dev/null)
     local is_upstream_branch=1
-    if [ "$origin_branch" == "" ]; then
+
+    # If rev-parse returned empty string or @{upstream} (happens on newly created repos)
+    if [ "$origin_branch" == "" ] || [ "$origin_branch" == "@{upstream}" ]; then
         # No upstream branch found, try to deduce origin branch (if multiple, get fork-point commit)
         origin_branch=$(deduce_origin_branch_or_commit ${git_local_branch})
         is_upstream_branch=0
