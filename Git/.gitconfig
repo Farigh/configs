@@ -12,6 +12,7 @@
 [alias]
     lg = log --graph --date=relative --pretty=tformat:'%Cred%h%Creset -%C(auto)%d%Creset %s %Cgreen(%an %ad)%Creset'
     my-work = !git log --all --committer="`git config user.email`" --date=local --pretty=tformat:'%Cred%h%Creset - %Cgreen(%ad)%Creset %s'
+    cdiff = diff --word-diff --word-diff-regex=.
     wdiff = diff --word-diff
     stashall = stash save --include-untracked
     stashunstaged = stash save --keep-index --include-untracked
@@ -74,9 +75,6 @@
 
     # Show renames/moves as such
     renames = true
-
-    # When using --word-diff, assume --word-diff-regex=.
-    wordRegex = .
 
     # Display submodule-related information (commit listings)
     submodule = log
