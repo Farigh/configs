@@ -13,11 +13,17 @@ function custom_git_ps1()
     ##################
     ###  FUNCTIONS ###
     ##################
+    function __git_ps1_get_unix_git_dir()
+    {
+        # Get git root dir and format it to unix path (c:/ => /c/) if needed
+        git rev-parse --git-dir 2>/dev/null | sed "s#^\([A-Za-z]\):#/\1#"
+    }
+
     function __git_ps1_warn_if_old_fetch()
     {
         local warn_date_min_days=2
         # Get git root dir and format it to unix path (c:/ => /c/)
-        local git_root_dir=$(git rev-parse --git-dir 2>/dev/null | sed "s#^\([A-Za-z]\):#/\1#")
+        local git_root_dir=$(__git_ps1_get_unix_git_dir)
 
         local git_fetch_file="${git_root_dir}/FETCH_HEAD"
         if [ ! -f "${git_fetch_file}" ]; then
@@ -42,7 +48,7 @@ function custom_git_ps1()
 
         local origin_commit="HEAD"
         if [ "${exclusif_commit_count}" != "" ]; then
-            # HEAD~<commit_count> might be undefined
+            # HEAD~<commit_count> might be undefined (during a conflict for exemple)
             local exclusif_commit_count_str="HEAD~${exclusif_commit_count}"
             local exclusif_commit_count_ref=$(git rev-parse ${exclusif_commit_count_str} 2>/dev/null)
             if [ "${exclusif_commit_count_ref}" != "${exclusif_commit_count_str}" ]; then
@@ -94,6 +100,8 @@ function custom_git_ps1()
 
     function __git_ps1_get_repository_info()
     {
+        local git_local_branch=$1
+
         # Try to simply use git branch to extract upstream branch
         local origin_branch=$(git rev-parse --abbrev-ref --symbolic-full-name @{upstream} 2>/dev/null)
         local is_upstream_branch=1
@@ -152,6 +160,31 @@ function custom_git_ps1()
         fi
     }
 
+    function __git_ps1_get_current_operation()
+    {
+        local git_root_dir=$(__git_ps1_get_unix_git_dir)
+
+        local git_current_operation_status=""
+
+        if [ -e "${git_root_dir}/CHERRY_PICK_HEAD" ]; then
+            git_current_operation_status="cherry-pick"
+        elif [ -e "${git_root_dir}/MERGE_HEAD" ]; then
+            git_current_operation_status="merge"
+        elif [ -e "${git_root_dir}/rebase" ] || [ -e "${git_root_dir}/rebase-apply/rebasing" ] || [ -e "${git_root_dir}/rebase-merge" ]; then
+            git_current_operation_status="rebase"
+        elif [ -e "${git_root_dir}/rebase-apply" ]; then
+            git_current_operation_status="am"
+        elif [ -e "${git_root_dir}/BISECT_LOG" ]; then
+            git_current_operation_status="bisect"
+        fi
+
+        if [ "${git_current_operation_status}" != "" ]; then
+            git_current_operation_status=" ${GIT_PS1_LIGHT_RED}>"'!'"${git_current_operation_status}"'!'"<${GIT_PS1_RESET_COLOR}"
+        fi
+
+        echo "${git_current_operation_status}"
+    }
+
     ##################
     ###    MAIN    ###
     ##################
@@ -173,13 +206,15 @@ function custom_git_ps1()
     local commit_diff_str=""
     local operation_indicator=""
 
+    # Get operation in progress if any
     local git_is_bare_repository=$(git rev-parse --is-bare-repository)
     if [ "$git_is_bare_repository" == "true" ]; then
         operation_indicator=" [${GIT_PS1_LIGHT_RED}bare repository${GIT_PS1_RESET_COLOR}]"
     else
-        __git_ps1_get_repository_info
+        __git_ps1_get_repository_info $git_local_branch
     fi
 
+    # Format local branch display
     if [ "$git_local_branch" == "HEAD" ]; then
         local rev_short_number=`git rev-parse --short HEAD`
         git_local_branch="${GIT_PS1_LIGHT_RED}HEAD detached at ${GIT_PS1_RESET_COLOR}${rev_short_number}"
@@ -187,11 +222,16 @@ function custom_git_ps1()
         git_local_branch="${GIT_PS1_LIGHT_CYAN}${git_local_branch}${GIT_PS1_RESET_COLOR}"
     fi
 
+    # Get current git operation if any
+    local current_git_operation=$(__git_ps1_get_current_operation)
+
     local warn_if_old_fetch_status=$(__git_ps1_warn_if_old_fetch)
-    echo " (${git_local_branch}${operation_indicator}${commit_diff_str})${warn_if_old_fetch_status}"
+    echo " (${git_local_branch}${operation_indicator}${commit_diff_str})${current_git_operation}${warn_if_old_fetch_status}"
 
     # Unset inner functions
+    unset -f __git_ps1_get_unix_git_dir
     unset -f __git_ps1_warn_if_old_fetch
     unset -f __git_ps1_deduce_origin_branch_or_commit
     unset -f __git_ps1_get_repository_info
+    unset -f __git_ps1_get_current_operation
 }
