@@ -41,8 +41,13 @@ function custom_git_ps1()
         local exclusif_commit_count=$(git show-branch -g --sha1-name $git_local_branch | grep '!' | tail -n1 | sed -n "s/.*@{\([0-9]*\)}].*/\1/p")
 
         local origin_commit="HEAD"
-        if [ "$exclusif_commit_count" != "" ]; then
-            origin_commit=$(git rev-parse HEAD~${exclusif_commit_count})
+        if [ "${exclusif_commit_count}" != "" ]; then
+            # HEAD~<commit_count> might be undefined
+            local exclusif_commit_count_str="HEAD~${exclusif_commit_count}"
+            local exclusif_commit_count_ref=$(git rev-parse ${exclusif_commit_count_str} 2>/dev/null)
+            if [ "${exclusif_commit_count_ref}" != "${exclusif_commit_count_str}" ]; then
+                origin_commit="${exclusif_commit_count_ref}"
+            fi
         fi
 
         # If we find nothing, return fork-point sha1
