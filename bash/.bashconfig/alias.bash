@@ -3,9 +3,8 @@
 # Define a bunch of alias
 alias ls="ls -h -F --color=auto --show-control-chars"
 alias la="ls -a"
-alias ll="ls -lh"
-alias lla="ls -lah"
-alias grep="grep -nEI --color"
+alias ll="ls -l"
+alias lla="ls -la"
 
 # printf '\033[3J' tels PuTTY to clear the scrollbar as well
 alias pclear="clear && printf '\033[3J'"
