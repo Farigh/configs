@@ -2,13 +2,13 @@
 
 function custom_git_ps1()
 {
-    local GIT_PS1_RESET_COLOR=`echo -e "\e[00m"`
-    local GIT_PS1_LIGHT_RED=`echo -e "\e[1;31m"`
-    local GIT_PS1_LIGHT_GREEN=`echo -e "\e[1;32m"`
-    local GIT_PS1_LIGHT_YELLOW=`echo -e "\e[1;33m"`
-    local GIT_PS1_LIGHT_BLUE=`echo -e "\e[1;34m"`
-    local GIT_PS1_PURPLE=`echo -e "\e[0;35m"`
-    local GIT_PS1_LIGHT_CYAN=`echo -e "\e[1;36m"`
+    local GIT_PS1_RESET_COLOR=$(echo -e "\e[00m")
+    local GIT_PS1_LIGHT_RED=$(echo -e "\e[1;31m")
+    local GIT_PS1_LIGHT_GREEN=$(echo -e "\e[1;32m")
+    local GIT_PS1_LIGHT_YELLOW=$(echo -e "\e[1;33m")
+    local GIT_PS1_LIGHT_BLUE=$(echo -e "\e[1;34m")
+    local GIT_PS1_PURPLE=$(echo -e "\e[0;35m")
+    local GIT_PS1_LIGHT_CYAN=$(echo -e "\e[1;36m")
 
     ##################
     ###  FUNCTIONS ###
@@ -216,7 +216,7 @@ function custom_git_ps1()
 
     # Format local branch display
     if [ "$git_local_branch" == "HEAD" ]; then
-        local rev_short_number=`git rev-parse --short HEAD`
+        local rev_short_number=$(git rev-parse --short HEAD)
         git_local_branch="${GIT_PS1_LIGHT_RED}HEAD detached at ${GIT_PS1_RESET_COLOR}${rev_short_number}"
     else
         git_local_branch="${GIT_PS1_LIGHT_CYAN}${git_local_branch}${GIT_PS1_RESET_COLOR}"
