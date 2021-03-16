@@ -1,7 +1,7 @@
 #! /bin/bash
 
 # Common colors
-RESET_COLOR=$(echo -e "\e[00m")
+RESET_COLOR=$(echo -e "\e[0m")
 BLACK=$(echo -e "\e[0;30m")
 DARK_GRAY=$(echo -e "\e[1;30m")
 RED=$(echo -e "\e[0;31m")

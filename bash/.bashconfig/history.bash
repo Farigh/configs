@@ -2,7 +2,7 @@
 
 # Bash history configuration colors
 MYBLUE=$(echo -e '\e[0;34m')
-MYRESET_COLOR=$(echo -e '\e[00m')
+MYRESET_COLOR=$(echo -e '\e[0m')
 
 # Don't put duplicated lines if previous one was the same
 export HISTCONTROL=ignoredups:erasedups

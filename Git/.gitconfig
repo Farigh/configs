@@ -27,7 +27,7 @@
     clean-branches = "!git_cleanup_merged_branches() \
                       { \
                           if [ -t 1 ]; then \
-                              git_cleanup_reset_color=$(echo -e '\\e[00m'); \
+                              git_cleanup_reset_color=$(echo -e '\\e[0m'); \
                               git_cleanup_light_red=$(echo -e '\\e[1;31m'); \
                               git_cleanup_light_green=$(echo -e '\\e[1;32m'); \
                               git_cleanup_light_cyan=$(echo -e '\\e[1;36m'); \

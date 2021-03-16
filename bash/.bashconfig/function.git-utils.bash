@@ -2,7 +2,7 @@
 
 function custom_git_ps1()
 {
-    local GIT_PS1_RESET_COLOR=$(echo -e "\e[00m")
+    local GIT_PS1_RESET_COLOR=$(echo -e "\e[0m")
     local GIT_PS1_LIGHT_RED=$(echo -e "\e[1;31m")
     local GIT_PS1_LIGHT_GREEN=$(echo -e "\e[1;32m")
     local GIT_PS1_LIGHT_YELLOW=$(echo -e "\e[1;33m")
