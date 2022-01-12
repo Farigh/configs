@@ -1,6 +1,8 @@
 # Using any proxy settings ?
 #[http]
-#    proxy = <Proxy_addre>
+#    proxy = <Proxy_address>
+#
+#    # Disable SSL verification (consider uncommenting at your own risks)
 #    sslVerify = false
 #
 
@@ -17,10 +19,9 @@
     stashall = stash save --include-untracked
     stashunstaged = stash save --keep-index --include-untracked
     st = status --short --branch
-    clean-tags = !git tag -l | xargs git tag -d && git fetch -t
 
     # Cleanup all remote branches
-    # Cleanup all merged branches (on master or release branch)
+    # Cleanup all merged branches (on origin/master, the list can be ajusted in the for loop)
     # Colors are disabled if piped
     # Hint: List whatever origin branch you consider for integration in the for loop
     # (ie. the branch was merged to). You can use $(git branch -r | grep/awk/sed "<regex>")
@@ -37,10 +38,10 @@
  \
                           git remote show | xargs --no-run-if-empty -n 1 git remote prune | sed \"${git_sed_color_pruned}\"; \
  \
-                          git_main_branch=''; \
                           git_sed_color_deleted=\"s/Deleted branch \\([^ ]*\\) (was \\([a-fA-F0-9]*\\))/Successfully deleted branch ${git_cleanup_light_green}\\1${git_cleanup_reset_color} (was ${git_cleanup_light_cyan}\\2${git_cleanup_reset_color})/\"; \
                           git_sed_color_unmerged=\"s/error: The branch '\\([^']*\\)' is not fully merged./Can't delete branch ${git_cleanup_light_red}\\1${git_cleanup_reset_color} (not fully merged)/\"; \
  \
+                          git_main_branch=''; \
                           for git_main_branch in origin/master; do \
                               git branch --merged $git_main_branch | grep -v '^\\*' \
                                                                    | xargs --no-run-if-empty -n 1 git branch -d 2>&1 \
@@ -53,7 +54,7 @@
     upstream-candidates = !git log $(git rev-parse --abbrev-ref --symbolic-full-name @{upstream} 2>/dev/null)..HEAD  --pretty='format:%Cred%h%Creset %s' --color
 
 [core]
-    # Out of luck: on Windows w/o msysGit? You may have Notepad++...
+    # Use Notepad++ as the default git editor
     #editor = 'C:/Program Files (x86)/Notepad++/notepad++.exe' -multiInst -notabbar -nosession -noPlugin
 
     # Don't consider trailing space change as a cause for merge conflicts
@@ -78,6 +79,13 @@
 
     # Display submodule-related information (commit listings)
     submodule = log
+
+[fetch]
+    # Automatically prune any remote-tracking references that no longer exist on the remote, on fetch
+    prune = true
+
+    # Automatically prune any remote-tracking tags that no longer exist on the remote, on fetch
+    pruneTags = true
 
 [grep]
     # Consider most regexes to be ERE
